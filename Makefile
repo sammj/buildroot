@@ -861,6 +861,44 @@ savedefconfig: $(BUILD_DIR)/buildroot-config/conf outputmakefile
 
 .PHONY: defconfig savedefconfig
 
+# Find the path of a config file that may be either in TOPDIR or BR2_EXTERNAL.
+# Missing or duplicate matches must be checked for elsewhere.
+define FIND_CONFIG_FILE =
+$(foreach d,$(TOPDIR)/configs $(BR2_EXTERNAL)/configs,$(wildcard $(d)/$(1)))
+endef
+
+define CONFIG_FILE_LIST =
+$(foreach f,$1,$(call FIND_CONFIG_FILE,$f))
+endef
+
+# Check that each config file is found once and only once.
+define CHECK_CONFIG_FILE_LIST =
+$(foreach f,$(1),
+ifeq "$(words $(call FIND_CONFIG_FILE,$(f)))" "0"
+$$(error ERROR: Missing input file: $(f))
+else
+ifneq "$(words $(call FIND_CONFIG_FILE,$(f)))" "1"
+$$(error ERROR: Duplicate input file: $(f))
+endif
+endif
+)
+endef
+
+# To be called by configuration fragments (*.mk) to set up defconfigs built
+# by merge_config.sh, via the include that follows:
+define merge_config =
+$(call CHECK_CONFIG_FILE_LIST,$2 $3)
+$(1): $$(BUILD_DIR)/buildroot-config/conf $(call CONFIG_FILE_LIST,$2 $3) outputmakefile
+	@mkdir $$(CONFIG_DIR)/.merge_config
+	@$$(TOPDIR)/support/kconfig/merge_config.sh -m -O $$(CONFIG_DIR)/.merge_config \
+		$(call CONFIG_FILE_LIST,$2 $3)
+	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$$(CONFIG_DIR)/.merge_config/.config \
+		$$< --defconfig=$$(CONFIG_DIR)/.merge_config/.config $$(CONFIG_CONFIG_IN)
+	@rm -rf $$(CONFIG_DIR)/.merge_config
+endef
+
+$(foreach d,$(TOPDIR)/configs $(BR2_EXTERNAL)/configs,$(eval -include $(d)/*.mk))
+
 ################################################################################
 #
 # Cleanup and misc junk
