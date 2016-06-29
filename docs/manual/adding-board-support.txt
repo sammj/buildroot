@@ -24,6 +24,9 @@ savedefconfig+. This will generate a minimal +defconfig+ file at the
 root of the Buildroot source tree. Move this file into the +configs/+
 directory, and rename it +<boardname>_defconfig+.
 
+It is also possible to create configurations by specifying differences from
+an existing configuration. See xref:merged-defconfigs[].
+
 It is recommended to use as much as possible upstream versions of the
 Linux kernel and bootloaders, and to use as much as possible default
 kernel and bootloader configurations. If they are incorrect for your

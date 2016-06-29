@@ -1,0 +1,60 @@
+// -*- mode:doc -*- ;
+// vim: set syntax=asciidoc:
+
+[[merged-defconfigs]]
+== Merged configurations
+
+Buildroot supports the use of the Linux kernel's +merge_config.sh+ script to
+create configurations by merging a set of partial configurations (or overlays)
+on top of a base configuration. This may be useful when there are several
+configurations that are specializations of a single generic configuration.
+
+Files in the +configs/+ directory with the extension
++.mk+ will be read by the top level Makefile and the Make function
++merge_config+ can be used within them to define new merged configurations.
+
+The merge_config function takes three parameters: the first is the name of the
+new configuration (which should end with +_defconfig+), the second is the name
+of the base configuration file and the third is a space separated list of the
+partial configuration files to merge from the +configs/+ directory. All files
+should be specified relative to the +configs/+ directory and the name of the
+Make fragment file should match the name of the configuration it creates.
+
+The new configuration can be selected as if it were a normal configuration, i.e. with
++make foo_defconfig+.
+
+Partial configurations have the same format as full configuration
+files except that they contain only a subset of values. They can be created by
+starting with a normal configuration file and deleting lines as appropriate.
+
+External configuration files from the +$(BR2_EXTERNAL)/configs+ directory are fully
+supported, and merge configurations may freely refer to files from either
+location.
+
+Example:
+
+If configs/foo_defconfig contains:
+-----
+BR2_TARGET_GENERIC_HOSTNAME="buildroot"
+-----
+
+And configs/bar_defconfig.mk contains:
+-----
+$(eval $(call merge_config,bar_defconfig,foo_defconfig,b.config))
+-----
+
+And configs/b.config contains:
+-----
+BR2_TARGET_GENERIC_ISSUE="Welcome to BAR"
+-----
+
+After running the command:
+-----
+make bar_defconfig
+-----
+
+The resulting .config file would contain:
+-----
+BR2_TARGET_GENERIC_HOSTNAME="buildroot"
+BR2_TARGET_GENERIC_ISSUE="Welcome to BAR"
+-----
