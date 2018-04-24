@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-BUSYBOX_VERSION = 1.27.2
-BUSYBOX_SITE = http://www.busybox.net/downloads
-BUSYBOX_SOURCE = busybox-$(BUSYBOX_VERSION).tar.bz2
+BUSYBOX_VERSION = c4169837b17e19c5992047feda82efa388589a6c
+BUSYBOX_SITE ?= $(call github,sammj,busybox,$(BUSYBOX_VERSION))
 BUSYBOX_LICENSE = GPL-2.0
 BUSYBOX_LICENSE_FILES = LICENSE
 
