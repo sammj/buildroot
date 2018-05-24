@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BUSYBOX_VERSION = c4169837b17e19c5992047feda82efa388589a6c
+BUSYBOX_VERSION = 967a34d4a69420f2e422878fcff7d6a7fd016232
 BUSYBOX_SITE ?= $(call github,sammj,busybox,$(BUSYBOX_VERSION))
 BUSYBOX_LICENSE = GPL-2.0
 BUSYBOX_LICENSE_FILES = LICENSE
