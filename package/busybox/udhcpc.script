@@ -8,6 +8,16 @@ RESOLV_CONF="/etc/resolv.conf"
 [ -e $RESOLV_CONF ] || touch $RESOLV_CONF
 [ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
 [ -n "$subnet" ] && NETMASK="netmask $subnet"
+[ -n "$ipv6" ] && ip="$ipv6/128"
+
+wait_for_ipv6_default_route() {
+	attempts=10
+	while [ $attempts != 0 ] && [ -z "$(ip -6 route list | grep default)" ] ; do
+		sleep 1
+		attempts=$(($attempts-1))
+	done
+	[ $attempts = 0 ] && echo "failed to get default ipv6 route"
+}
 
 case "$1" in
 	deconfig)
@@ -37,6 +47,10 @@ case "$1" in
 			/usr/sbin/avahi-autoipd -k $interface
 		fi
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
+		if [ -n "$ipv6" ] ; then
+			echo "waiting for default ipv6 route set"
+			wait_for_ipv6_default_route
+		fi
 
 		if [ -n "$router" ] ; then
 			echo "deleting routers"
