@@ -46,6 +46,18 @@ case "$1" in
 		if [ -x /usr/sbin/avahi-autoipd ]; then
 			/usr/sbin/avahi-autoipd -k $interface
 		fi
+
+		# Drop any previously assigned ipv6 addresses
+		if [ -n "$ipv6" ]; then
+			ifconfig $interface | grep inet6 | while read -r line; do
+				if [[ ! -z "$(echo $line | awk '/\/128/ && /Scope:Global/')" ]]; then
+					addr=$(echo $line | awk '{print $3}')
+					echo "Removing old address $addr from $interface"
+					ifconfig $interface del $addr
+				fi
+			done
+		fi
+
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
 		if [ -n "$ipv6" ] ; then
 			echo "waiting for default ipv6 route set"
